@@ -1,0 +1,24 @@
+LIBRARY ieee;
+USE ieee.std_logic_1164.all;
+
+ENTITY T_FF IS
+	PORT ( T, Clk, Clr, Pr , input_value: IN STD_LOGIC;
+			 Q: OUT STD_LOGIC);
+END T_FF ;
+
+ARCHITECTURE Behaviour OF T_FF IS
+	SIGNAL Qt:   STD_LOGIC;
+	BEGIN
+		PROCESS(T, Clk, Clr, Pr, input_value)
+		BEGIN
+			IF Clr = '0' THEN
+				Qt <= '0';
+			ELSIF Pr = '0' THEN
+				Qt <= input_value;
+			ELSIF rising_edge(Clk) AND T = '1' THEN
+				Qt <= NOT(Qt);	
+			END IF;
+		END PROCESS;
+		Q <= Qt;
+
+END Behaviour;

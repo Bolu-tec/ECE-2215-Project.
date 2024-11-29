@@ -12,7 +12,7 @@ end Up_Down_Counter;
 
 architecture behaviour of Up_Down_Counter is
     signal Qt : STD_LOGIC_VECTOR(12 downto 0);
-	 signal clearIn : STD_LOGIC; -- Internal clear signal
+	 signal clearIn : STD_LOGIC; 
 	 signal input_bit_2344 : STD_LOGIC_VECTOR(12 downto 0);
 	 signal set : STD_LOGIC;
 	 signal clockIn : std_logic;

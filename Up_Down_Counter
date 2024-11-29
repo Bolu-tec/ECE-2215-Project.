@@ -1,0 +1,201 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity Up_Down_Counter is
+    Port (
+		  En ,ck ,Cr,Pr : in STD_LOGIC;   
+		  UpOrDown : in STD_LOGIC; --  '0' for up ,'1' for down
+		  input_value : in STD_LOGIC_VECTOR(12 downto 0);
+        Q : out STD_LOGIC_VECTOR(12 downto 0)
+    );
+end Up_Down_Counter;
+
+architecture behaviour of Up_Down_Counter is
+    signal Qt : STD_LOGIC_VECTOR(12 downto 0);
+	 signal clearIn : STD_LOGIC; -- Internal clear signal
+	 signal input_bit_2344 : STD_LOGIC_VECTOR(12 downto 0);
+	 signal set : STD_LOGIC;
+	 signal clockIn : std_logic;
+	 
+	 Component T_FF 
+	PORT ( T, Clk, Clr, Pr , input_value  : IN STD_LOGIC;
+			 Q       : OUT STD_LOGIC);
+   End Component;
+	
+	component clk_gen_1_output is 
+		generic( n  : integer := 25000;
+           n1 : integer := 1000);  
+      port( Clock : in  std_logic;
+           c_out : out std_logic );
+	end component;
+	begin 
+process(UpOrDown, input_Value)
+begin
+    
+    if Qt = "0000000000000" and UpOrDown = '1' then
+        input_bit_2344 <= "1011111111000";
+    else
+        input_bit_2344 <= input_value;
+    end if; 
+
+    if (Qt = "0000000000000" and UpOrDown = '1') or Pr = '0' then
+        set <= '0';
+    else
+        set <= '1';
+    end if; 
+	 
+
+end process;
+
+clearIn <= Cr and (not(Qt(0) and Qt(3) and Qt(4) and Qt(4) and Qt(6) and Qt(7) and Qt(8) and Qt(9) and Qt(10) and Qt(12)) );
+
+ CLOCK_STAGE : clk_gen_1_output PORT MAP(
+clock => ck,
+c_out => clockIn
+);
+
+STAGE0 : T_FF PORT MAP(
+T => En and '1', 
+Clk => clockIn, 
+Clr => clearIn, 
+Pr => set, 
+input_value => input_bit_2344(0),
+Q  => Qt(0)
+);
+
+STAGE1 : T_FF PORT MAP(
+T => ((Qt(0) and En and Not (UpOrDown)) OR (Not(Qt(0)) and En and UpOrDown)),
+Clk => clockIn, 
+Clr => clearIn, 
+Pr => set, 
+input_value => input_bit_2344(1),
+Q  => Qt(1)
+);
+
+STAGE2 : T_FF PORT MAP(
+T => ((Qt(0) and Qt(1) and En and Not (UpOrDown)) OR (Not(Qt(0)) and Not(Qt(1)) and En and UpOrDown)), 
+Clk => clockIn, 
+Clr => clearIn, 
+Pr => set, 
+input_value => input_bit_2344(2),
+Q  => Qt(2)
+);
+
+STAGE3 : T_FF PORT MAP(
+T => ((Qt(0) and Qt(1) and Qt(2) and En and Not (UpOrDown)) OR (Not(Qt(0)) and Not(Qt(1)) and Not(Qt(2)) and En and UpOrDown)), 
+Clk => clockIn, 
+Clr => clearIn, 
+Pr => set, 
+input_value => input_bit_2344(3),
+Q  => Qt(3)
+);
+
+STAGE4 : T_FF PORT MAP(
+T => ((Qt(0) and Qt(1) and Qt(2)and Qt(3) and En and Not (UpOrDown)) OR 
+(Not(Qt(0)) and Not(Qt(1))  and Not(Qt(2)) and Not(Qt(3)) and En and UpOrDown)), 
+Clk => clockIn, 
+Clr => clearIn, 
+Pr => set, 
+input_value => input_bit_2344(4),
+Q  => Qt(4)
+);
+
+STAGE5 : T_FF PORT MAP(
+T => ((Qt(0) and Qt(1) and Qt(2)and Qt(3) and Qt(4) and En and Not (UpOrDown)) OR 
+(Not(Qt(0)) and Not(Qt(1))  and Not(Qt(2)) and Not(Qt(3)) and Not(Qt(4)) and En and UpOrDown)), 
+Clk => clockIn, 
+Clr => clearIn, 
+Pr => set, 
+input_value => input_bit_2344(5),
+Q  => Qt(5)
+);
+
+STAGE6 : T_FF PORT MAP(
+T => ((Qt(0) and Qt(1) and Qt(2) and Qt(3) and Qt(4)  and Qt(5) 
+and En and Not (UpOrDown)) OR (Not(Qt(0)) and Not(Qt(1))  and Not(Qt(2)) 
+and Not(Qt(3)) and Not(Qt(4))  and Not(Qt(5)) and En and UpOrDown)), 
+Clk => clockIn, 
+Clr => clearIn, 
+Pr => set, 
+input_value => input_bit_2344(6),
+Q  => Qt(6)
+);
+
+STAGE7 : T_FF PORT MAP(
+T => ((Qt(0) and Qt(1) and Qt(2) and Qt(3) and Qt(4) and
+ Qt(5)and Qt(6) and En and Not (UpOrDown)) OR 
+(Not(Qt(0)) and Not(Qt(1))  and Not(Qt(2)) and Not(Qt(3))
+ and Not(Qt(4)) and Not(Qt(5)) and Not(Qt(6)) and En and UpOrDown)), 
+Clk => clockIn, 
+Clr => clearIn, 
+Pr => set, 
+input_value => input_bit_2344(7),
+Q  => Qt(7)
+);
+
+STAGE8 : T_FF PORT MAP(
+T => ((Qt(0) and Qt(1) and Qt(2) and Qt(3) and Qt(4) and
+ Qt(5) and Qt(6) and Qt(7) and En and Not (UpOrDown)) OR
+(Not(Qt(0)) and Not(Qt(1))  and Not(Qt(2)) and Not(Qt(3))
+ and Not(Qt(4)) and Not(Qt(5)) and Not(Qt(6)) and Not(Qt(7)) and En and UpOrDown)), 
+Clk => clockIn, 
+Clr => clearIn, 
+Pr => set, 
+input_value => input_bit_2344(8),
+Q  => Qt(8)
+);
+
+STAGE9 : T_FF PORT MAP(
+T =>  ((Qt(0) and Qt(1) and Qt(2) and Qt(3) and Qt(4) and
+ Qt(5) and Qt(6) and Qt(7)and Qt(8)  and En and 
+ Not (UpOrDown)) OR (Not(Qt(0)) and Not(Qt(1))  and Not(Qt(2)) 
+ and Not(Qt(3))and Not(Qt(4)) and Not(Qt(5)) and Not(Qt(6)) 
+ and Not(Qt(7)) and Not(Qt(8))  and En and UpOrDown)), 
+Clk => clockIn, 
+Clr => clearIn, 
+Pr => set, 
+input_value => input_bit_2344(9),
+Q  => Qt(9)
+);
+
+STAGE10 : T_FF PORT MAP(
+T => ((Qt(0) and Qt(1) and Qt(2) and Qt(3) and Qt(4) and
+ Qt(5) and Qt(6) and Qt(7)and Qt(8) and Qt(9) and En and 
+ Not (UpOrDown)) OR (Not(Qt(0)) and Not(Qt(1))  and Not(Qt(2)) 
+ and Not(Qt(3))and Not(Qt(4)) and Not(Qt(5)) and Not(Qt(6)) 
+ and Not(Qt(7)) and Not(Qt(8)) and Not(Qt(9)) and En and UpOrDown)), 
+Clk => clockIn, 
+Clr => clearIn, 
+Pr => set, 
+input_value => input_bit_2344(10),
+Q  => Qt(10)
+);
+
+STAGE11: T_FF PORT MAP(
+T => ((Qt(0) and Qt(1) and Qt(2) and Qt(3) and Qt(4) and
+ Qt(5) and Qt(6) and Qt(7)and Qt(8) and Qt(9) and Qt(10) and En and Not (UpOrDown)) OR
+(Not(Qt(0)) and Not(Qt(1))  and Not(Qt(2)) and Not(Qt(3))
+ and Not(Qt(4)) and Not(Qt(5)) and Not(Qt(6)) and Not(Qt(7)) 
+ and Not(Qt(8))  and Not(Qt(9)) and Not(Qt(10)) and En and UpOrDown)),
+Clk => clockIn, 
+Clr => clearIn, 
+Pr => set, 
+input_value => input_bit_2344(11),
+Q  => Qt(11)
+);
+
+STAGE12 : T_FF PORT MAP(
+T => ((Qt(0) and Qt(1) and Qt(2) and Qt(3) and Qt(4) and
+ Qt(5) and Qt(6) and Qt(7)and Qt(8) and Qt(9) and Qt(10) and Qt(11) and En and Not (UpOrDown)) OR
+(Not(Qt(0)) and Not(Qt(1))  and Not(Qt(2)) and Not(Qt(3))
+ and Not(Qt(4)) and Not(Qt(5)) and Not(Qt(6)) and Not(Qt(7)) 
+ and Not(Qt(8))  and Not(Qt(9)) and Not(Qt(10)) and Not(Qt(11)) and En and UpOrDown)),
+Clk => clockIn, 
+Clr => clearIn, 
+Pr => set, 
+input_value => input_bit_2344(12),
+Q  => Qt(12)
+);
+
+Q<= Qt;
+	 end behaviour;

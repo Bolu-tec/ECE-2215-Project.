@@ -1,0 +1,61 @@
+library IEEE; 
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity BaseConverter is
+    Port (
+        binaryInput : in STD_LOGIC_VECTOR(12 downto 0);
+        base_switch : in STD_LOGIC; -- 1 for base 12, 0 for base 6
+        convertedDigits : out STD_LOGIC_VECTOR(15 downto 0)
+    );
+end BaseConverter;
+
+architecture behaviour of BaseConverter is
+begin
+    process(binaryInput)
+     variable inputDecimal : INTEGER;
+     variable selectedBase : INTEGER;
+	  variable baseDigit0, baseDigit1, baseDigit2, baseDigit3 : INTEGER;
+    begin
+        -- Convert binary input to integer
+        inputDecimal := to_integer(unsigned(binaryInput));
+        
+        -- Determine the base based on the switch value
+        if base_switch = '0' then
+            selectedBase := 6; -- Base 6
+        else
+            selectedBase := 12; -- Base 12
+        end if;
+        
+         case selectedBase is
+            when 6 =>
+               baseDigit0 :=  inputDecimal mod 6;
+                inputDecimal :=  inputDecimal / 6;
+                baseDigit1 :=  inputDecimal mod 6;
+                inputDecimal :=  inputDecimal / 6;
+                baseDigit2 :=  inputDecimal mod 6;
+                inputDecimal :=  inputDecimal / 6;
+                baseDigit3 :=  inputDecimal mod 6;
+       
+            when 12 =>
+                baseDigit0 :=  inputDecimal mod 12;
+                inputDecimal :=  inputDecimal / 12;
+                baseDigit1 :=  inputDecimal mod 12;
+                inputDecimal :=  inputDecimal / 12;
+                baseDigit2 :=  inputDecimal mod 12;
+                inputDecimal :=  inputDecimal / 12;
+                baseDigit3 :=  inputDecimal mod 12;
+            when others =>
+                baseDigit0 := 0;
+                baseDigit1 := 0;
+                baseDigit2 := 0;
+                baseDigit3 := 0;
+        end case;
+
+        -- Assign the result to the output 
+        convertedDigits(3 downto 0) <= std_logic_vector(to_unsigned(baseDigit0, 4));
+        convertedDigits(7 downto 4) <= std_logic_vector(to_unsigned(baseDigit1, 4));
+        convertedDigits(11 downto 8) <= std_logic_vector(to_unsigned(baseDigit2, 4));
+        convertedDigits(15 downto 12) <= std_logic_vector(to_unsigned(baseDigit3, 4));
+    end process;
+end behaviour;

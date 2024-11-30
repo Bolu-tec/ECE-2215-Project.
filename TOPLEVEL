@@ -1,0 +1,218 @@
+LIBRARY ieee;
+USE ieee.std_logic_1164.all;
+
+ENTITY modulo2345Counter IS
+	PORT(
+	
+		--*****Inputs*****
+		--Switches that dont affect IF statements
+		Clock50 				: IN STD_LOGIC; --on board clock
+		UpOrDown				: IN STD_LOGIC; --Switch C
+		
+		
+		--Switches that affect IF statements
+		Stop					: IN STD_LOGIC; --Switch A
+		output_XorY			: IN STD_LOGIC; --Switch B
+		
+		BinaryInputValue	: IN STD_LOGIC_VECTOR(12 downto 0); --13 Input Switches
+		LoadStartValue		: IN STD_LOGIC; --Load Binary Start Value Switch
+			
+		
+		--*****Outputs*****
+		--Binary Switch Outputs
+		BinaryInputValue_Output : OUT STD_LOGIC_VECTOR(12 downto 0); --13 Reds Led's
+		WarningLED 					: OUT STD_LOGIC; --Warning LED (Lights up if 13 Input Switches are higher than 2344. Value will not be loaded)
+		
+		--7-Segmemt Display Outputs
+		n7A	: OUT STD_LOGIC_VECTOR(6 downto 0);
+		n7B	: OUT STD_LOGIC_VECTOR(6 downto 0);
+		n7C	: OUT STD_LOGIC_VECTOR(6 downto 0);
+		n7D	: OUT STD_LOGIC_VECTOR(6 downto 0);
+		
+		--Binary Green LED Display
+		LSBBinaryValue : OUT STD_LOGIC_VECTOR(7 downto 0);
+		
+		
+		
+		
+--//////////////////////////////////////////////////NEED TO EDIT BASED ON FUNCTIONS//////////////////////////////////////////////////
+		--Final Output
+		Q 		: OUT STD_LOGIC_VECTOR(3 downto 0);
+
+			);
+			
+--//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			
+END modulo2345Counter;
+
+
+ARCHITECTURE Structure OF modulo2345Counter IS
+
+--//////////////////////////////////////////////////NEED TO EDIT BASED ON FUNCTIONS//////////////////////////////////////////////////
+	
+	COMPONENT counter
+	
+		PORT(
+		   CLK, T, CL, PR : IN STD_LOGIC;
+		   Q					: OUT STD_LOGIC
+			);
+			
+	END COMPONENT;
+	
+	COMPONENT converter
+	
+		PORT(
+		   CLK, T, CL, PR : IN STD_LOGIC;
+		   Q					: OUT STD_LOGIC
+			);
+			
+	END COMPONENT;
+	
+	
+--//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	
+	
+	--7segment component
+		
+	COMPONENT nibble_to_7segment
+	
+		port (D,C,B,A : IN std_logic;
+				HLa,HLb,HLc,HLd,HLe,HLf,HLg: OUT std_logic
+				);
+			
+	END COMPONENT;
+	
+	COMPONENT clk_gen_1_output
+	
+		port(Clock : in  std_logic;
+			  c_out : out std_logic );
+			
+	END COMPONENT;
+	
+	
+--//////////////////////////////////////////////////NEED TO EDIT BASED ON FUNCTIONS//////////////////////////////////////////////////
+	--*****SIGNALS*****
+	SIGNAL Qtemp : STD_LOGIC_VECTOR(15 DOWNTO 0); -- Counter Output
+	SIGNAL Qf : STD_LOGIC_VECTOR(15 DOWNTO 0); --Final Output (May or may not contain a conversion from X to Y if depending on X or Y Switch)
+	SIGNAL Qbinary : STD_LOGIC_VECTOR(7 DOWNTO 0); --binary output value
+	
+--//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	
+	BEGIN 
+
+	
+		--instatiate
+		CLK0: clk_gen_1_output PORT MAP(Clock => Clock50, c_out => );
+		
+		IF (BinaryInputValue(12 DOWNTO 0) >=  "100100101000") THEN WarningLED = '1';
+		
+
+--//////////////////////////////////////////////////NEED TO EDIT BASED ON FUNCTIONS//////////////////////////////////////////////////
+		--Count if Switch A is OFF
+		IF (Stop = '0') THEN {
+		
+
+			CTR0: counter PORT MAP(CLK => c_out, UD => UpOrDown, preset => BinaryInputValue, startValue => LoadStartValue,
+												Q0 => Qtemp(0), Q1 => Qtemp(1), Q2 => Qtemp(2), Q3 => Qtemp(3));
+												
+				Qf(0) <= Qtemp(0);
+				Qf(1) <= Qtemp(1);
+				Qf(2) <= Qtemp(2);
+				Qf(3) <= Qtemp(3);
+							
+			
+			IF (output_XorY = '1') THEN {
+			
+			
+				--Convert to Base Y if Switch B is ON
+				CVR0: converter PORT MAP(Q1 => Qtemp(0), Q1 => Qtemp(1), Q1 => Qtemp(2), Q1 => Qtemp(3),
+													Q0 => Qf(0), Q1 => Qf(1), Q2 => Qf(2), Q3 => Qf(3)););
+			
+			}
+			ELSE
+			
+			
+				
+			
+	
+		}
+		
+--//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+			
+		--7 SEGMENT DISPLAY
+		stage0: nibble_to_7segment PORT MAP(D => Qf(3),C => Qf(2),B => Qf(1),A => Qf(0), 
+						HLa => n7A(0),
+						HLb => n7A(1), 
+						HLc => n7A(2), 
+						HLd => n7A(3), 
+						HLe => n7A(4), 
+						HLf => n7A(5), 
+						HLg => n7A(6)
+						);
+						
+		stage1: nibble_to_7segment PORT MAP(D => Qf(7),C => Qf(6),B => Qf(5),A => Qf(4), 
+						HLa => n7B(0),
+						HLb => n7B(1), 
+						HLc => n7B(2), 
+						HLd => n7B(3), 
+						HLe => n7B(4), 
+						HLf => n7B(5), 
+						HLg => n7B(6)
+						);
+		
+		stage2: nibble_to_7segment PORT MAP(D => Qf(11),C => Qf(10),B => Qf(9),A => Qf(8), 
+						HLa => n7C(0),
+						HLb => n7C(1), 
+						HLc => n7C(2), 
+						HLd => n7C(3), 
+						HLe => n7C(4), 
+						HLf => n7C(5), 
+						HLg => n7C(6)
+						);
+						
+		stage3: nibble_to_7segment PORT MAP(D => Qf(15),C => Qf(14),B => Qf(13),A => Qf(12), 
+						HLa => n7D(0),
+						HLb => n7D(1), 
+						HLc => n7D(2), 
+						HLd => n7D(3), 
+						HLe => n7D(4), 
+						HLf => n7D(5), 
+						HLg => n7D(6)
+						);
+						
+		
+		--Binary Red LED Display
+		BinaryInputValue_Output(0) <= BinaryInputValue(0); 
+		BinaryInputValue_Output(1) <= BinaryInputValue(1); 
+		BinaryInputValue_Output(2) <= BinaryInputValue(2); 
+		BinaryInputValue_Output(3) <= BinaryInputValue(3); 
+		BinaryInputValue_Output(4) <= BinaryInputValue(4); 
+		BinaryInputValue_Output(5) <= BinaryInputValue(5); 
+		BinaryInputValue_Output(6) <= BinaryInputValue(6); 
+		BinaryInputValue_Output(7) <= BinaryInputValue(7); 
+		BinaryInputValue_Output(8) <= BinaryInputValue(8); 
+		BinaryInputValue_Output(9) <= BinaryInputValue(9); 
+		BinaryInputValue_Output(10) <= BinaryInputValue(10); 
+		BinaryInputValue_Output(11) <= BinaryInputValue(11);
+		BinaryInputValue_Output(12) <= BinaryInputValue(12);
+		
+		--Binary LSB Green LED Display
+		LSBBinaryValue(0) <= Qbinary(0);
+		LSBBinaryValue(1) <= Qbinary(1);
+		LSBBinaryValue(2) <= Qbinary(2);
+		LSBBinaryValue(3) <= Qbinary(3);
+		LSBBinaryValue(4) <= Qbinary(4);
+		LSBBinaryValue(5) <= Qbinary(5);
+		LSBBinaryValue(6) <= Qbinary(6);
+		LSBBinaryValue(7) <= Qbinary(7);
+
+		
+		
+END Structure;
